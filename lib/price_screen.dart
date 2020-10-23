@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
 
+import 'HttpService.dart';
+import 'Models.dart';
 import 'coin_data.dart';
 import 'model/CoinApiModels.dart';
 
@@ -14,16 +14,11 @@ class PriceScreen extends StatefulWidget {
 }
 
 var seciliParaBirimi = "TL";
-ExchangerateResult exchangerateResult = ExchangerateResult('1', '1', '1', 1);
+ExchangerateResult exchangerateResultBtc = ExchangerateResult('1', '1', '1', 1);
+ExchangerateResult exchangerateResultEth = ExchangerateResult('1', '1', '1', 1);
+ExchangerateResult exchangerateResultLtc = ExchangerateResult('1', '1', '1', 1);
 
 class _PriceScreenState extends State<PriceScreen> {
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    load();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -34,27 +29,9 @@ class _PriceScreenState extends State<PriceScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: <Widget>[
-          Padding(
-            padding: EdgeInsets.fromLTRB(18.0, 18.0, 18.0, 0),
-            child: Card(
-              color: Colors.lightBlueAccent,
-              elevation: 5.0,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10.0),
-              ),
-              child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 15.0, horizontal: 28.0),
-                child: Text(
-                  '1 BTC = ${exchangerateResult.rate} ${exchangerateResult.asset_id_quote}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ),
-          ),
+          CoinWidget(exchangerateResultBtc),
+          CoinWidget(exchangerateResultEth),
+          CoinWidget(exchangerateResultLtc),
           Container(
             height: 150.0,
             alignment: Alignment.center,
@@ -86,23 +63,16 @@ class _PriceScreenState extends State<PriceScreen> {
   }
 
   Future<void> paraBirimmiSecildi(String paraBirimi) async {
-    final response = await get(
-        'https://rest.coinapi.io/v1/exchangerate/BTC/$seciliParaBirimi?apikey=F1B80F17-2AF1-4C05-ADA5-7C7684CBCAD8');
 
-    if (response.statusCode == 200) {
-      // If the server did return a 200 OK response,
-      // then parse the JSON.
-      setState(() {
-        exchangerateResult =
-            ExchangerateResult.fromJson(jsonDecode(response.body));
-      });
+  var  exchangerateResultBtcTmp = await paraBirimiGetir(seciliParaBirimi, 'BTC');
+  var  exchangerateResultEthTmp = await paraBirimiGetir(seciliParaBirimi, 'ETH');
+  var  exchangerateResultLtcTmp = await paraBirimiGetir(seciliParaBirimi, 'LTC');
 
-
-    } else {
-      // If the server did not return a 200 OK response,
-      // then throw an exception.
-      throw Exception('Failed to load album');
-    }
+    setState(() {
+      exchangerateResultBtc= exchangerateResultBtcTmp;
+      exchangerateResultEth= exchangerateResultEthTmp;
+      exchangerateResultLtc= exchangerateResultLtcTmp;
+    });
   }
 
   Widget androidDropDown() {
@@ -138,6 +108,6 @@ class _PriceScreenState extends State<PriceScreen> {
   }
 
   Future<void> load() async {
-   await paraBirimmiSecildi('TL');
+    await paraBirimmiSecildi('TL');
   }
 }
